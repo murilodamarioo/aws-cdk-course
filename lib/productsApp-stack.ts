@@ -10,6 +10,7 @@ import { Construct } from 'constructs'
 
 export class ProductsAppStack extends cdk.Stack {
     readonly productsFecthHandler: lambdaNodeJS.NodejsFunction
+    readonly productsAdminHandler: lambdaNodeJS.NodejsFunction
     readonly productsDynamoDb: dynamoDb.Table
 
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -28,7 +29,7 @@ export class ProductsAppStack extends cdk.Stack {
             writeCapacity: 1
         })
 
-        // Lambda creation
+        // ProductsFetchFunction lambda creation
         this.productsFecthHandler = new lambdaNodeJS.NodejsFunction(this, 'ProductsFecthFunction', {
             functionName: 'ProductsFecthFunction',
             entry: 'lambda/products/productsFetchFunction.ts',
@@ -44,7 +45,24 @@ export class ProductsAppStack extends cdk.Stack {
                 PRODUCTS_DDB: this.productsDynamoDb.tableName
             }
         })
-
         this.productsDynamoDb.grantReadData(this.productsFecthHandler)
+
+         // ProductsAdminFunction lambda creation
+        this.productsAdminHandler = new lambdaNodeJS.NodejsFunction(this, 'ProductsAdminHandler', {
+          functionName:  'ProductsAdminFunction',
+          entry: 'lambda/products/productsAdminFunction.ts',
+          runtime: lambda.Runtime.NODEJS_16_X,
+          handler: 'handler',
+          memorySize: 128,
+          timeout: cdk.Duration.seconds(5),
+          bundling: {
+            minify: true,
+            sourceMap: false
+          },
+          environment: {
+            PRODUCT_DDB: this.productsDynamoDb.tableName
+          }
+        })
+        this.productsDynamoDb.grantWriteData(this.productsAdminHandler)
     }  
 }
