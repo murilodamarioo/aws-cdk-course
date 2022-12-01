@@ -4,10 +4,10 @@ import { ProductRepository } from '/opt/nodejs/productsLayer'
 
 import { DynamoDB } from 'aws-sdk'
 
-const productsDdb = process.env.PRODUCTS_DDB!
+const productsDynamoDb = process.env.PRODUCTS_DDB!
 const dynamoDbClient = new DynamoDB.DocumentClient()
 
-const productRepository = new ProductRepository(dynamoDbClient, productsDdb)
+const productRepository = new ProductRepository(dynamoDbClient, productsDynamoDb)
 
 export async function handler(event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResultV2> {
 

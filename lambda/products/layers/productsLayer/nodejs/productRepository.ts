@@ -8,6 +8,7 @@ export interface Product {
     code: string;
     price: number;
     model: string;
+    productUrl: string;
 }
 
 export class ProductRepository {
@@ -20,6 +21,7 @@ export class ProductRepository {
     }
 
     async getAllProducts(): Promise<Product[]> {
+        console.log(`TableName Get: ${this.productDynamoDb}`)
         const data = await this.dynamoDbClient.scan({
             TableName: this.productDynamoDb
         }).promise()
@@ -42,9 +44,15 @@ export class ProductRepository {
         }
     }
 
-    async create(product: Product): Promise<Product> {
+    async createProduct(product: Product): Promise<Product> {
+
+        console.log(`Product Detail: ${JSON.stringify(product)}`)
+
         product.id = uuid()
-       await  this.dynamoDbClient.put({
+
+        console.log(`TableName Post: ${this.productDynamoDb}`)
+
+        await  this.dynamoDbClient.put({
             TableName: this.productDynamoDb,
             Item: product
         }).promise()
@@ -76,12 +84,13 @@ export class ProductRepository {
             },
             ConditionExpression: 'attribute_exists(id)',
             ReturnValues: 'UPDATED_NEW',
-            UpdateExpression: 'set productName = :n, code = :c, price = :p, model = :m',
+            UpdateExpression: 'set productName = :n, code = :c, price = :p, model = :m, productUrl = :u',
             ExpressionAttributeValues: {
                 ":n": product.productName,
                 ":c": product.code,
                 ":p": product.price,
-                ":m": product.model
+                ":m": product.model,
+                ":u": product.productUrl
             }
         }).promise()
 

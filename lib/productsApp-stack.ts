@@ -67,7 +67,7 @@ export class ProductsAppStack extends cdk.Stack {
             sourceMap: false
           },
           environment: {
-            PRODUCT_DDB: this.productsDynamoDb.tableName
+            PRODUCTS_DDB: this.productsDynamoDb.tableName
           },
           layers: [productsLayer]
         })
