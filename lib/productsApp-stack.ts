@@ -50,7 +50,8 @@ export class ProductsAppStack extends cdk.Stack {
             environment: {
                 PRODUCTS_DDB: this.productsDynamoDb.tableName
             },
-            layers: [productsLayer]
+            layers: [productsLayer],
+            tracing: lambda.Tracing.ACTIVE
         })
         this.productsDynamoDb.grantReadData(this.productsFecthHandler)
 
@@ -69,7 +70,8 @@ export class ProductsAppStack extends cdk.Stack {
           environment: {
             PRODUCTS_DDB: this.productsDynamoDb.tableName
           },
-          layers: [productsLayer]
+          layers: [productsLayer],
+          tracing: lambda.Tracing.ACTIVE
         })
         this.productsDynamoDb.grantWriteData(this.productsAdminHandler)
     }  
