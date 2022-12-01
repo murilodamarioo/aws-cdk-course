@@ -2,6 +2,8 @@ import { APIGatewayProxyEvent, APIGatewayProxyResultV2, Context } from 'aws-lamb
 
 export async function handler(event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResultV2> {
 
+    console.log(event)
+
     const lambdaRequestId = context.awsRequestId
     const apiRequestId = event.requestContext.requestId
 
@@ -19,6 +21,15 @@ export async function handler(event: APIGatewayProxyEvent, context: Context): Pr
                     message: 'GET Products - Ok' 
                 })
             }
+        }
+    } else if (event.resource === '/products/{id}') {
+        const productId = event.pathParameters!.id as string
+
+        console.log(`GET /products/${productId}`)
+
+        return {
+            statusCode: 200,
+            body: `GET /products/${productId}`
         }
     }
 
