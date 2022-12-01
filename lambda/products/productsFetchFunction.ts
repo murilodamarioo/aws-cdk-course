@@ -1,5 +1,14 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResultV2, Context } from 'aws-lambda'
 
+import { ProductRepository } from '/opt/nodejs/productsLayer'
+
+import { DynamoDB } from 'aws-sdk'
+
+const productsDdb = process.env.PRODUCTS_DDB!
+const dynamoDbClient = new DynamoDB.DocumentClient()
+
+const productRepository = new ProductRepository(dynamoDbClient, productsDdb)
+
 export async function handler(event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResultV2> {
 
     console.log(event)
@@ -13,13 +22,13 @@ export async function handler(event: APIGatewayProxyEvent, context: Context): Pr
 
     if (event.resource === '/products') {
         if (method === 'GET') {
-            console.log('GET')
+            console.log('GET /products')
+
+            const products = await productRepository.getAllProducts()
 
             return {
                 statusCode: 200,
-                body: JSON.stringify({
-                    message: 'GET Products - Ok' 
-                })
+                body: JSON.stringify({products: products})
             }
         }
     } else if (event.resource === '/products/{id}') {
@@ -27,9 +36,20 @@ export async function handler(event: APIGatewayProxyEvent, context: Context): Pr
 
         console.log(`GET /products/${productId}`)
 
-        return {
-            statusCode: 200,
-            body: `GET /products/${productId}`
+
+        try {
+            const product = await productRepository.getProductbyId(productId)
+
+            return {
+                statusCode: 200,
+                body: JSON.stringify(product)
+            }
+        } catch(error) {
+            console.error((<Error>error).message)
+            return {
+                statusCode: 404,
+                body: (<Error>error).message
+            }
         }
     }
 
