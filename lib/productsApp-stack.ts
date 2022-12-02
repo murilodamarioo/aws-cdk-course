@@ -51,27 +51,29 @@ export class ProductsAppStack extends cdk.Stack {
                 PRODUCTS_DDB: this.productsDynamoDb.tableName
             },
             layers: [productsLayer],
-            tracing: lambda.Tracing.ACTIVE
+            tracing: lambda.Tracing.ACTIVE,
+            insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_98_0
         })
         this.productsDynamoDb.grantReadData(this.productsFecthHandler)
 
          // ProductsAdminFunction lambda creation
         this.productsAdminHandler = new lambdaNodeJS.NodejsFunction(this, 'ProductsAdminHandler', {
-          functionName:  'ProductsAdminFunction',
-          entry: 'lambda/products/productsAdminFunction.ts',
-          runtime: lambda.Runtime.NODEJS_16_X,
-          handler: 'handler',
-          memorySize: 128,
-          timeout: cdk.Duration.seconds(5),
-          bundling: {
-            minify: true,
-            sourceMap: false
-          },
-          environment: {
-            PRODUCTS_DDB: this.productsDynamoDb.tableName
-          },
-          layers: [productsLayer],
-          tracing: lambda.Tracing.ACTIVE
+            functionName:  'ProductsAdminFunction',
+            entry: 'lambda/products/productsAdminFunction.ts',
+            runtime: lambda.Runtime.NODEJS_16_X,
+            handler: 'handler',
+            memorySize: 128,
+            timeout: cdk.Duration.seconds(5),
+            bundling: {
+                minify: true,
+                sourceMap: false
+            },
+            environment: {
+                PRODUCTS_DDB: this.productsDynamoDb.tableName
+            },
+            layers: [productsLayer],
+            tracing: lambda.Tracing.ACTIVE,
+            insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_98_0
         })
         this.productsDynamoDb.grantWriteData(this.productsAdminHandler)
     }  
