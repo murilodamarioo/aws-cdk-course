@@ -1,5 +1,3 @@
-import { StringFilter } from "aws-sdk/clients/securityhub";
-
 export enum ProductEventType {
     CREATED = 'PRODUCT_CREATED',
     UPDATED = 'PRODUCT_UPDATED',

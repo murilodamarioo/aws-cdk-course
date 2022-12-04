@@ -9,7 +9,6 @@ import * as dynamoDb from 'aws-cdk-lib/aws-dynamodb'
 import * as ssm from 'aws-cdk-lib/aws-ssm'
 
 import { Construct } from 'constructs'
-import { TagManager } from 'aws-cdk-lib'
 
 interface ProductsAppStackProps extends cdk.StackProps {
     eventsDdb: dynamoDb.Table
@@ -46,7 +45,7 @@ export class ProductsAppStack extends cdk.Stack {
 
 
         // productEventsFunction lambda creation
-        const productEventsHandler = new lambdaNodeJS.NodejsFunction(this, 'ProductsFecthFunction', {
+        const productEventsHandler = new lambdaNodeJS.NodejsFunction(this, 'ProductEventsFunction', {
             functionName: 'ProductsEventsHandler',
             entry: 'lambda/products/productEventsFunction.ts',
             runtime: lambda.Runtime.NODEJS_16_X,
@@ -64,7 +63,7 @@ export class ProductsAppStack extends cdk.Stack {
             tracing: lambda.Tracing.ACTIVE,
             insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_98_0
         })
-        props.eventsDdb.grantReadData(productEventsHandler)
+        props.eventsDdb.grantWriteData(productEventsHandler)
 
         // ProductsFetchFunction lambda creation
         this.productsFecthHandler = new lambdaNodeJS.NodejsFunction(this, 'ProductsFecthFunction', {
