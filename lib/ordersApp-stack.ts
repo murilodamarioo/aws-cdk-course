@@ -46,6 +46,7 @@ export class OrderAppStack extends cdk.Stack {
         const productsLayerArn = ssm.StringParameter.valueForStringParameter(this, 'ProductsLayerVersionArn')
         const productsLayer = lambda.LayerVersion.fromLayerVersionArn(this, 'ProductsLayerVersionArn', productsLayerArn)
 
+        // Criando a função de pedidos
         this.ordersHandler = new lambdaNodeJS.NodejsFunction(this, 'OrdersFunction', {
             functionName: 'OrdersFuntion',
             entry: 'lambda/orders/ordersFunction.ts',
