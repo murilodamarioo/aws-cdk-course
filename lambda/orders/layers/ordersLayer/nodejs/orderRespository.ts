@@ -63,4 +63,20 @@ export class OrderRepository {
 
         return data.Items as Order[]
     }
+
+    async getOrder(email: string, orderId: string): Promise<Order> {
+        const data = await this.dynamoDbClient.get({
+            TableName: this.ordersDynamoDb,
+            Key: {
+                pk: email,
+                sk: orderId
+            }
+        }).promise()
+
+        if (data.Item) {
+            return data.Item as Order
+        } else {
+            throw new Error('Order not found')
+        }
+    }
 }
