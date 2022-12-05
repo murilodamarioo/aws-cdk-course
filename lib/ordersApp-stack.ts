@@ -10,18 +10,18 @@ import * as ssm from 'aws-cdk-lib/aws-ssm'
 
 import { Construct } from 'constructs'
 
-interface OrdersAppStack extends cdk.StackProps {
+interface OrdersAppStackProps extends cdk.StackProps {
     productDdb: dynamodb.Table
 }
 
-export class OrderAppStack extends cdk.Stack {
+export class OrdersAppStack extends cdk.Stack {
 
     readonly ordersHandler: lambdaNodeJS.NodejsFunction 
     
-    constructor(scope: Construct, id: string, props: OrdersAppStack) {
+    constructor(scope: Construct, id: string, props: OrdersAppStackProps) {
         super(scope, id, props)
 
-        // Criação da tabela de pedidos
+        // Order table creation
         const ordersDynamodb = new dynamodb.Table(this, 'OrdersDdb', {
             tableName: 'orders',
             partitionKey: {
@@ -46,7 +46,7 @@ export class OrderAppStack extends cdk.Stack {
         const productsLayerArn = ssm.StringParameter.valueForStringParameter(this, 'ProductsLayerVersionArn')
         const productsLayer = lambda.LayerVersion.fromLayerVersionArn(this, 'ProductsLayerVersionArn', productsLayerArn)
 
-        // Criando a função de pedidos
+        // Creating the order function
         this.ordersHandler = new lambdaNodeJS.NodejsFunction(this, 'OrdersFunction', {
             functionName: 'OrdersFuntion',
             entry: 'lambda/orders/ordersFunction.ts',
@@ -67,10 +67,10 @@ export class OrderAppStack extends cdk.Stack {
             insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_98_0
         })
 
-        // Dando permissão para leitura e escrita na tabela de pedidos 
+        // Giving read and write permission on order table
         ordersDynamodb.grantReadWriteData(this.ordersHandler)
 
-        // Dando permissão de leitura na tabela de produtos
+        // Giving read permission on products table
         props.productDdb.grantReadData(this.ordersHandler)
     }
 }
