@@ -51,4 +51,16 @@ export class OrderRepository {
 
         return data.Items as Order[]
     }
+
+    async getOrdersByEmail(email: string): Promise<Order[]> {
+        const data = await this.dynamoDbClient.query({
+            TableName: this.ordersDynamoDb,
+            KeyConditionExpression: 'pk = :email',
+            ExpressionAttributeValues: {
+                ':email': email
+            }
+        }).promise()
+
+        return data.Items as Order[]
+    }
 }
