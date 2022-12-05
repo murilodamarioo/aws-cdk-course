@@ -15,6 +15,8 @@ interface OrdersAppStack extends cdk.StackProps {
 }
 
 export class OrderAppStack extends cdk.Stack {
+
+    readonly ordersHandler: lambdaNodeJS.NodejsFunction 
     
     constructor(scope: Construct, id: string, props: OrdersAppStack) {
         super(scope, id, props)
@@ -44,5 +46,30 @@ export class OrderAppStack extends cdk.Stack {
         const productsLayerArn = ssm.StringParameter.valueForStringParameter(this, 'ProductsLayerVersionArn')
         const productsLayer = lambda.LayerVersion.fromLayerVersionArn(this, 'ProductsLayerVersionArn', productsLayerArn)
 
+        this.ordersHandler = new lambdaNodeJS.NodejsFunction(this, 'OrdersFunction', {
+            functionName: 'OrdersFuntion',
+            entry: 'lambda/orders/ordersFunction.ts',
+            runtime: lambda.Runtime.NODEJS_16_X,
+            handler: 'handler',
+            memorySize: 128,
+            timeout: cdk.Duration.seconds(2),
+            bundling: {
+                minify: true,
+                sourceMap: false,
+            },
+            environment: {
+                PRODUCTS_DDB: props.productDdb.tableName,
+                ORDERS_DDB: ordersDynamodb.tableName
+            },
+            layers: [ordersLayer, productsLayer],
+            tracing: lambda.Tracing.ACTIVE,
+            insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_98_0
+        })
+
+        // Dando permissão para leitura e escrita na tabela de pedidos 
+        ordersDynamodb.grantReadWriteData(this.ordersHandler)
+
+        // Dando permissão de leitura na tabela de produtos
+        props.productDdb.grantReadData(this.ordersHandler)
     }
 }
