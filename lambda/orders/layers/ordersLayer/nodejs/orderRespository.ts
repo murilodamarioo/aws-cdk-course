@@ -43,4 +43,12 @@ export class OrderRepository {
 
         return order
     }
+
+    async getAllOrders(): Promise<Order[]> {
+        const data = await this.dynamoDbClient.scan({
+            TableName: this.ordersDynamoDb,
+        }).promise()
+
+        return data.Items as Order[]
+    }
 }
