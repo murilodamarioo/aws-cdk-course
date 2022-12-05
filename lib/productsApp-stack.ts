@@ -4,33 +4,33 @@ import * as lambdaNodeJS from 'aws-cdk-lib/aws-lambda-nodejs'
 
 import * as cdk from 'aws-cdk-lib'
 
-import * as dynamoDb from 'aws-cdk-lib/aws-dynamodb'
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb'
 
 import * as ssm from 'aws-cdk-lib/aws-ssm'
 
 import { Construct } from 'constructs'
 
 interface ProductsAppStackProps extends cdk.StackProps {
-    eventsDdb: dynamoDb.Table
+    eventsDdb: dynamodb.Table
 }
 
 export class ProductsAppStack extends cdk.Stack {
     readonly productsFecthHandler: lambdaNodeJS.NodejsFunction
     readonly productsAdminHandler: lambdaNodeJS.NodejsFunction
-    readonly productsDynamoDb: dynamoDb.Table
+    readonly productsDynamoDb: dynamodb.Table
 
     constructor(scope: Construct, id: string, props: ProductsAppStackProps) {
         super(scope, id, props)
 
         // DynamoDB table creation
-        this.productsDynamoDb = new dynamoDb.Table(this, 'ProductsDynamoDb', {
+        this.productsDynamoDb = new dynamodb.Table(this, 'ProductsDynamoDb', {
             tableName: 'Products',
             removalPolicy: cdk.RemovalPolicy.DESTROY,
             partitionKey: {
                 name: 'id',
-                type: dynamoDb.AttributeType.STRING
+                type: dynamodb.AttributeType.STRING
             },
-            billingMode: dynamoDb.BillingMode.PROVISIONED,
+            billingMode: dynamodb.BillingMode.PROVISIONED,
             readCapacity: 1,
             writeCapacity: 1
         })
