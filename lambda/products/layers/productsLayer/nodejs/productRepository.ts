@@ -98,4 +98,21 @@ export class ProductRepository {
 
         return data.Attributes as Product
     }
+
+    async getProductsbyIds(productIds: string[]): Promise<Product[]> {
+        const keys: { id: string; }[] = []
+        productIds.forEach((productId) => {
+            keys.push({ id: productId })
+        })
+
+        const data = await this.dynamoDbClient.batchGet({
+            RequestItems: {
+                [this.productDynamoDb]: {
+                    Keys: keys
+                }
+            }
+        }).promise()
+        
+        return data.Responses![this.productDynamoDb] as Product[]
+    }
 }
