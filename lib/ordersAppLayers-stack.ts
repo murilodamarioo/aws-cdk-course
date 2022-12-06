@@ -12,7 +12,7 @@ export class OrdersAppLayersStack extends cdk.Stack {
         super(scope, id, props)
 
         const ordersLayer = new lambda.LayerVersion(this, 'OrdersLayer', {
-            code: lambda.Code.fromAsset('lambda/orders/layer/ordersLayer'),
+            code: lambda.Code.fromAsset('lambda/orders/layers/ordersLayer'),
             compatibleRuntimes: [lambda.Runtime.NODEJS_16_X],
             layerVersionName: 'OrdersLayer',
             removalPolicy: cdk.RemovalPolicy.RETAIN
@@ -25,7 +25,7 @@ export class OrdersAppLayersStack extends cdk.Stack {
 
 
         const ordersApiLayer = new lambda.LayerVersion(this, 'OrdersApiLayer', {
-            code: lambda.Code.fromAsset('lambda/orders/layer/ordersApiLayer'),
+            code: lambda.Code.fromAsset('lambda/orders/layers/ordersApiLayer'),
             compatibleRuntimes: [lambda.Runtime.NODEJS_16_X],
             layerVersionName: 'OrdersApiLayer',
             removalPolicy: cdk.RemovalPolicy.RETAIN
