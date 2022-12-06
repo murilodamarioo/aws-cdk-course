@@ -29,7 +29,7 @@ export class ProductRepository {
         return data.Items as Product[]
     }
 
-    async getProductbyId(productId: string): Promise<Product> {
+    async getProductById(productId: string): Promise<Product> {
         const data = await this.dynamoDbClient.get({
             TableName: this.productDynamoDb,
             Key: {
@@ -99,7 +99,7 @@ export class ProductRepository {
         return data.Attributes as Product
     }
 
-    async getProductsbyIds(productIds: string[]): Promise<Product[]> {
+    async getProductsByIds(productIds: string[]): Promise<Product[]> {
         const keys: { id: string; }[] = []
         productIds.forEach((productId) => {
             keys.push({ id: productId })
