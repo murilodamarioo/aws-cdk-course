@@ -1,5 +1,4 @@
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
-
 import { v4 as uuid } from 'uuid'
 
 export interface Product {

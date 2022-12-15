@@ -1,13 +1,8 @@
 import { Order, OrderRepository } from '/opt/nodejs/ordersLayer'
-
 import { Product, ProductRepository } from '/opt/nodejs/productsLayer'
-
 import { DynamoDB } from 'aws-sdk'
-
 import { APIGatewayProxyEvent, APIGatewayProxyResultV2, Context } from 'aws-lambda'
-
 import { CarrierType, OrderProductResponse, OrderRequest, OrderResponse, PaymentType, ShippingType } from './layers/ordersApiLayer/nodejs/orderApi'
-
 import * as AWSXRay from 'aws-xray-sdk'
 
 AWSXRay.captureAWS(require('aws-sdk'))
