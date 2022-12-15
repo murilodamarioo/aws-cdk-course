@@ -3,7 +3,7 @@ export enum OrderEventType {
     DELETED = 'ORDER_DELETED'
 }
 
-export interface Envolope {
+export interface Envelope {
     eventType: OrderEventType,
     data: string
 }
