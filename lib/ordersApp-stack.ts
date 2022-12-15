@@ -1,11 +1,12 @@
+import { Construct } from 'constructs'
 import * as lambda from 'aws-cdk-lib/aws-lambda'
 import * as lambdaNodeJS from 'aws-cdk-lib/aws-lambda-nodejs'
 import * as cdk from 'aws-cdk-lib'
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb'
 import * as ssm from 'aws-cdk-lib/aws-ssm'
-import { Construct } from 'constructs'
 import * as sns from 'aws-cdk-lib/aws-sns'
 import * as subs from 'aws-cdk-lib/aws-sns-subscriptions'
+import * as iam from 'aws-cdk-lib/aws-iam'
 
 interface OrdersAppStackProps extends cdk.StackProps {
     productDdb: dynamodb.Table,
@@ -110,5 +111,18 @@ export class OrdersAppStack extends cdk.Stack {
         })
         // Subscribe orderEventsHandler at ordersTopic
         ordersTopic.addSubscription(new subs.LambdaSubscription(orderEventsHandler))
+
+        // Giving policy to EventHandler function
+        const eventsDynamoDbPolicy = new iam.PolicyStatement({
+            effect: iam.Effect.ALLOW,
+            actions: ['dynamodb:PutItem'],
+            resources: [props.eventsDdb.tableArn],
+            conditions: {
+                ['ForAllValues:StringLike']: {
+                    'dynamodb:LeadingKeys': ['#order_*']
+                }
+            }
+        })
+        orderEventsHandler.addToRolePolicy(eventsDynamoDbPolicy)
     }
 }

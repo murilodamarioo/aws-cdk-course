@@ -31,20 +31,20 @@ const productsAppLayersStack = new ProductAppLayersStack(app, 'ProductsAppLayers
 })
 
 // Event DynamoDB Stack instance
-const eventDdbStack = new EventDdbStack(app, 'EventsDdb', {
+const eventsDdbStack = new EventDdbStack(app, 'EventsDdb', {
   tags: tags,
   env: env
 })
 
 // Product Stack instance
 const productsAppStack = new ProductsAppStack(app, 'ProductsApp', {
-  eventsDdb: eventDdbStack.table,
+  eventsDdb: eventsDdbStack.table,
   tags: tags,
   env: env
 })
 // Add stack dependence to productAppStack
 productsAppStack.addDependency(productsAppLayersStack)
-productsAppStack.addDependency(eventDdbStack)
+productsAppStack.addDependency(eventsDdbStack)
 
 // Order Layer Stack instance
 const ordersAppLayerStack = new OrdersAppLayersStack(app, 'OrdersAppLayers', {
@@ -56,11 +56,13 @@ const ordersAppLayerStack = new OrdersAppLayersStack(app, 'OrdersAppLayers', {
 const ordersAppStack = new OrdersAppStack(app, 'OrdersApp', {
   tags: tags,
   env: env,
-  productDdb: productsAppStack.productsDynamoDb
+  productDdb: productsAppStack.productsDynamoDb,
+  eventsDdb: eventsDdbStack.table
 })
 // Add stack dependence to orderAppStack
 ordersAppStack.addDependency(productsAppStack)
 ordersAppStack.addDependency(ordersAppLayerStack)
+ordersAppStack.addDependency(eventsDdbStack)
 
 // Ecommerce Stack instance
 const ecommerceApiStack = new EcommerceApiStack(app, 'ECommerceApi', {
