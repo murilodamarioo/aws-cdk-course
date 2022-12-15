@@ -67,7 +67,8 @@ export class OrdersAppStack extends cdk.Stack {
             },
             environment: {
                 PRODUCTS_DDB: props.productDdb.tableName,
-                ORDERS_DDB: ordersDynamodb.tableName
+                ORDERS_DDB: ordersDynamodb.tableName,
+                ORDER_EVENTS_TOPIC_ARN: ordersTopic.topicArn
             },
             layers: [ordersLayer, productsLayer, ordersApiLayer],
             tracing: lambda.Tracing.ACTIVE,
@@ -79,5 +80,8 @@ export class OrdersAppStack extends cdk.Stack {
 
         // Giving read permission on products table
         props.productDdb.grantReadData(this.ordersHandler)
+        
+        // Giving publish permission to ordersHandler funtion
+        ordersTopic.grantPublish(this.ordersHandler)
     }
 }
