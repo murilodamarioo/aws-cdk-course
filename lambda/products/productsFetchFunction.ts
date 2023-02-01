@@ -39,7 +39,7 @@ export async function handler(event: APIGatewayProxyEvent, context: Context): Pr
 
 
         try {
-            const product = await productRepository.getProductbyId(productId)
+            const product = await productRepository.getProductById(productId)
 
             return {
                 statusCode: 200,
