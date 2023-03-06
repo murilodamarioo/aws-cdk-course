@@ -40,7 +40,7 @@
         "lambda/orders/layers/orderEventsLayer/nodejs/orderEvent"
       ],
       "/opt/nodejs/orderEventsRepositoryLayer": [
-        "lambda/orders/layers/orderEventsRepositoryLayer/nodejs/orderEventRespository"
+        "lambda/orders/layers/orderEventsRepositoryLayer/nodejs/orderEventRepository"
       ]
     }
   },

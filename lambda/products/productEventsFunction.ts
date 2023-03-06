@@ -5,7 +5,7 @@ import * as AWSXRay from 'aws-xray-sdk'
 
 AWSXRay.captureAWS(require('aws-sdk'))
 
-const eventsDdb = process.env.EVENTS_DDB
+const eventsDdb = process.env.EVENTS_DDB!
 const dynamoDbClient = new DynamoDB.DocumentClient()
 
 export async function handler(event: ProductEvent, context: Context, callback: Callback): Promise<void>  {
@@ -23,7 +23,7 @@ export async function handler(event: ProductEvent, context: Context, callback: C
 
 function createEvent(event: ProductEvent) {
     const timestamp = Date.now()
-    const ttl = ~~(timestamp / 1000 + 5 + 60)
+    const ttl = ~~(timestamp / 1000 + 5 * 60)
 
     return dynamoDbClient.put({
         TableName: eventsDdb,

@@ -5,7 +5,7 @@ export interface OrderEventDdb {
     sk: string;
     ttl: number;
     email: string;
-    createdAt: string;
+    createdAt: number;
     requestId: string;
     eventType: string;
     info: {
