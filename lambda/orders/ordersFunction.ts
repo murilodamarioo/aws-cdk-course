@@ -27,6 +27,8 @@ export async function handler(event: APIGatewayProxyEvent, context: Context): Pr
 
     console.log(`API Gateway ResquestId: ${apiRequestId} - LambdaRequestId: ${lambdaRequestId}`)
 
+    console.log(`Event: ${JSON.stringify(event.body)}`)
+
     if(method === 'GET') {
         if (event.queryStringParameters) {
             const email = event.queryStringParameters!.email
