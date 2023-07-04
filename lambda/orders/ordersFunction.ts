@@ -10,7 +10,7 @@ AWSXRay.captureAWS(require('aws-sdk'))
 
 const ordersDynamoDB = process.env.ORDERS_DDB!
 const productsDynamoDb = process.env.PRODUCTS_DDB!
-const orderEventsTopicArn = process.env.ORDERS_EVENTS_TOPIC_ARN!    
+const orderEventsTopicArn = process.env.ORDER_EVENTS_TOPIC_ARN!    
 
 
 const dynamoDbClient = new DynamoDB.DocumentClient()
