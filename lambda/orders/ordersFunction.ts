@@ -5,6 +5,8 @@ import { APIGatewayProxyEvent, APIGatewayProxyResultV2, Context } from 'aws-lamb
 import { CarrierType, OrderProductResponse, OrderRequest, OrderResponse, PaymentType, ShippingType } from './layers/ordersApiLayer/nodejs/orderApi'
 import * as AWSXRay from 'aws-xray-sdk'
 import { OrderEvent, OrderEventType, Envelope } from '/opt/nodejs/orderEventsLayer'
+import { v4 as uuid } from 'uuid'
+
 
 AWSXRay.captureAWS(require('aws-sdk'))
 
@@ -79,14 +81,16 @@ export async function handler(event: APIGatewayProxyEvent, context: Context): Pr
 
         if (products.length === orderRequest.productIds.length) {
             const order = buildOrder(orderRequest, products)
-            const orderCreated = await orderRepository.createOrder(order)
 
-            const eventResult = await sendOrderEvent(orderCreated, OrderEventType.CREATED, lambdaRequestId)
-            console.log(`Order created event sent - OrderId: ${orderCreated.sk} - MessageId: ${eventResult.MessageId}`)
+            const orderCreatePromise = orderRepository.createOrder(order)
+            const eventResultPromise = sendOrderEvent(order, OrderEventType.CREATED, lambdaRequestId)
+
+            const results = await Promise.all([orderCreatePromise, eventResultPromise])
+            console.log(`Order created event sent - OrderId: ${order.sk} - MessageId: ${results[1].MessageId}`)
 
             return {
                 statusCode: 201,
-                body: JSON.stringify(convertToOrderResponse(orderCreated))
+                body: JSON.stringify(convertToOrderResponse(order))
             }
         } else {
             return {
@@ -168,6 +172,8 @@ function buildOrder(orderRequest: OrderRequest, products: Product[]): Order {
 
     const order: Order = {
         pk: orderRequest.email,
+        sk: uuid(),
+        createdAt: Date.now(),
         billing: {
             payment: orderRequest.paymentType,
             totalPrice: totalPrice
