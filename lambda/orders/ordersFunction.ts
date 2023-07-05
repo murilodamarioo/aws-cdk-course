@@ -65,7 +65,7 @@ export async function handler(event: APIGatewayProxyEvent, context: Context): Pr
                 }
             }
         } else {
-            // Get all orders
+            // Get all orders 
             const orders = await orderRepository.getAllOrders()
 
             return {

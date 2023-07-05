@@ -4,6 +4,8 @@ import * as cdk from 'aws-cdk-lib'
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb'
 import * as ssm from 'aws-cdk-lib/aws-ssm'
 import { Construct } from 'constructs'
+import * as iam from 'aws-cdk-lib/aws-iam'
+
 
 interface ProductsAppStackProps extends cdk.StackProps {
     eventsDdb: dynamodb.Table
@@ -39,7 +41,7 @@ export class ProductsAppStack extends cdk.Stack {
         const productEventsLayer = lambda.LayerVersion.fromLayerVersionArn(this, 'ProductEventsLayerVersionArn', productEventsLayerArn)
 
 
-        // productEventsFunction lambda creation
+        // productEventsHandler lambda creation
         const productEventsHandler = new lambdaNodeJS.NodejsFunction(this, 'ProductEventsFunction', {
             functionName: 'ProductsEventsHandler',
             entry: 'lambda/products/productEventsFunction.ts',
@@ -58,7 +60,19 @@ export class ProductsAppStack extends cdk.Stack {
             tracing: lambda.Tracing.ACTIVE,
             insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_98_0
         })
-        props.eventsDdb.grantWriteData(productEventsHandler)
+
+        // Giving policy to ProductEventsHandler function (PutItem)
+        const eventsDynamoDbPolicy = new iam.PolicyStatement({
+            effect: iam.Effect.ALLOW,
+            actions: ['dynamodb:PutItem'],
+            resources: [props.eventsDdb.tableArn],
+            conditions: {
+                ['ForAllValues:StringLike']: {
+                    'dynamodb:LeadingKeys': ['#product_*']
+                }
+            }
+        })
+        productEventsHandler.addToRolePolicy(eventsDynamoDbPolicy)
 
         // ProductsFetchFunction lambda creation
         this.productsFecthHandler = new lambdaNodeJS.NodejsFunction(this, 'ProductsFecthFunction', {
