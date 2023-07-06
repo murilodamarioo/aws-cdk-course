@@ -155,11 +155,23 @@ export class OrdersAppStack extends cdk.Stack {
             }
         }))
 
+        // Create the queue Dead Letter Queue
+        const orderEventsDlq = new sqs.Queue(this, 'OrderEventsDlq', {
+            queueName: 'order-events-dlq',
+            enforceSSL: false,
+            encryption: sqs.QueueEncryption.UNENCRYPTED,
+            retentionPeriod: cdk.Duration.days(10)
+        })
+
         // Create the Order Events Queue
         const orderEventsQueue = new sqs.Queue(this, 'OrderEventsQueue', {
             queueName: 'order-events',
             enforceSSL: false,
-            encryption: sqs.QueueEncryption.UNENCRYPTED
+            encryption: sqs.QueueEncryption.UNENCRYPTED,
+            deadLetterQueue: {
+                maxReceiveCount: 3,
+                queue: orderEventsDlq
+            }
         })
         // Subscribe the orderEventsQueue on ordersTopic SNS
         ordersTopic.addSubscription(new subs.SqsSubscription(orderEventsQueue, {
@@ -169,7 +181,6 @@ export class OrdersAppStack extends cdk.Stack {
                 })
             }
         }))
-
 
         // Create Order Emails Handler function
         const orderEmailsHandler = new lambdaNodeJS.NodejsFunction(this, 'OrderEmailsFunction', {
