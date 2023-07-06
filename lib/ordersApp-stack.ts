@@ -162,7 +162,13 @@ export class OrdersAppStack extends cdk.Stack {
             encryption: sqs.QueueEncryption.UNENCRYPTED
         })
         // Subscribe the orderEventsQueue on ordersTopic SNS
-        ordersTopic.addSubscription(new subs.SqsSubscription(orderEventsQueue))
+        ordersTopic.addSubscription(new subs.SqsSubscription(orderEventsQueue, {
+            filterPolicy: {
+                eventType: sns.SubscriptionFilter.stringFilter({
+                    allowlist: ['ORDER_CREATED']
+                })
+            }
+        }))
 
 
         // Create Order Emails Handler function
