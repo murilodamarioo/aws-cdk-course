@@ -163,5 +163,23 @@ export class OrdersAppStack extends cdk.Stack {
         })
         // Subscribe the orderEventsQueue on ordersTopic SNS
         ordersTopic.addSubscription(new subs.SqsSubscription(orderEventsQueue))
+
+
+        // Create Order Emails Handler function
+        const orderEmailsHandler = new lambdaNodeJS.NodejsFunction(this, 'OrderEmailsFunction', {
+            functionName: 'OrderEmailsFunction',
+            entry: 'lambda/orders/orderEmailsFunction.ts',
+            runtime: lambda.Runtime.NODEJS_16_X,
+            handler: 'handler',
+            memorySize: 128,
+            timeout: cdk.Duration.seconds(2),
+            bundling: {
+                minify: true,
+                sourceMap: false,
+            },
+            layers: [orderEventsLayer],
+            tracing: lambda.Tracing.ACTIVE,
+            insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_98_0
+        })
     }
 }  
