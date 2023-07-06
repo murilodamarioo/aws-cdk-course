@@ -128,5 +128,27 @@ export class OrdersAppStack extends cdk.Stack {
             }
         })
         orderEventsHandler.addToRolePolicy(eventsDynamoDbPolicy)
+
+        const billingHandler = new lambdaNodeJS.NodejsFunction(this, 'BillingFunction', {
+            functionName: 'BillingFunction',
+            entry: 'lambda/orders/billingFunction.ts',
+            runtime: lambda.Runtime.NODEJS_16_X,
+            handler: 'handler',
+            memorySize: 128,
+            timeout: cdk.Duration.seconds(2),
+            bundling: {
+                minify: true,
+                sourceMap: false,
+            },
+            tracing: lambda.Tracing.ACTIVE,
+            insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_98_0
+        })
+        ordersTopic.addSubscription(new subs.LambdaSubscription(billingHandler, {
+            filterPolicy: {
+                eventType: sns.SubscriptionFilter.stringFilter({
+                    allowlist: ['ORDER_CREATED']
+                })
+            }
+        }))
     }
 }
