@@ -63,7 +63,7 @@ export class OrdersAppStack extends cdk.Stack {
             topicName: 'order-events'
         })
 
-        // Creating the order function
+        // Creating the orderHandler function
         this.ordersHandler = new lambdaNodeJS.NodejsFunction(this, 'OrdersFunction', {
             functionName: 'OrdersFuntion',
             entry: 'lambda/orders/ordersFunction.ts',
@@ -129,6 +129,7 @@ export class OrdersAppStack extends cdk.Stack {
         })
         orderEventsHandler.addToRolePolicy(eventsDynamoDbPolicy)
 
+        // Creating the billingHandler function
         const billingHandler = new lambdaNodeJS.NodejsFunction(this, 'BillingFunction', {
             functionName: 'BillingFunction',
             entry: 'lambda/orders/billingFunction.ts',
@@ -143,6 +144,7 @@ export class OrdersAppStack extends cdk.Stack {
             tracing: lambda.Tracing.ACTIVE,
             insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_98_0
         })
+        // Subscribe billingHandler ar ordersTopic
         ordersTopic.addSubscription(new subs.LambdaSubscription(billingHandler, {
             filterPolicy: {
                 eventType: sns.SubscriptionFilter.stringFilter({
