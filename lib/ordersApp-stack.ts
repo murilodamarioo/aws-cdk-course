@@ -188,7 +188,12 @@ export class OrdersAppStack extends cdk.Stack {
             insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_98_0
         })
         // When a message arrives at orderEventsQueue Invoke orderEmailsHandler
-        orderEmailsHandler.addEventSource(new lambdaEventSource.SqsEventSource(orderEventsQueue))
+        orderEmailsHandler.addEventSource(new lambdaEventSource.SqsEventSource(orderEventsQueue, {
+            // Setting to wait for 5 messages to arrive
+            batchSize: 5,
+            enabled: true,
+            maxBatchingWindow: cdk.Duration.minutes(1)
+        }))
         // Give orderEmailsHandler permission to consume messages from orderEventsQueue
         orderEventsQueue.grantConsumeMessages(orderEmailsHandler)
     }
