@@ -19,7 +19,7 @@ const dynamoDbClient = new DynamoDB.DocumentClient()
 const snsClient = new SNS()
 
 const orderRepository = new OrderRepository(dynamoDbClient, ordersDynamoDB)
-const productRepository = new ProductRepository(dynamoDbClient, productsDynamoDb )
+const productRepository = new ProductRepository(dynamoDbClient, productsDynamoDb)
 
 
 export async function handler(event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResultV2> {
