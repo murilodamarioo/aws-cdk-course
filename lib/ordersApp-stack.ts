@@ -181,5 +181,9 @@ export class OrdersAppStack extends cdk.Stack {
             tracing: lambda.Tracing.ACTIVE,
             insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_98_0
         })
+        // When a message arrives at orderEventsQueue Invoke orderEmailsHandler
+        orderEmailsHandler.addEventSource(new lambdaEventSource.SqsEventSource(orderEventsQueue))
+        // Give orderEmailsHandler permission to consume messages from orderEventsQueue
+        orderEventsQueue.grantConsumeMessages(orderEmailsHandler)
     }
 }  
