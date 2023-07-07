@@ -42,6 +42,7 @@ export class OrderRepository {
     async getAllOrders(): Promise<Order[]> {
         const data = await this.dynamoDbClient.scan({
             TableName: this.ordersDynamoDb,
+            ProjectionExpression: 'pk, sk, createdAt, shipping, billing'
         }).promise()
 
         return data.Items as Order[]
@@ -53,7 +54,8 @@ export class OrderRepository {
             KeyConditionExpression: 'pk = :email',
             ExpressionAttributeValues: {
                 ':email': email
-            }
+            },
+            ProjectionExpression: 'pk, sk, createdAt, shipping, billing'
         }).promise()
 
         return data.Items as Order[]
