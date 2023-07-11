@@ -7,7 +7,6 @@ import * as AWSXRay from 'aws-xray-sdk'
 import { OrderEvent, OrderEventType, Envelope } from '/opt/nodejs/orderEventsLayer'
 import { v4 as uuid } from 'uuid'
 
-
 AWSXRay.captureAWS(require('aws-sdk'))
 
 const ordersDynamoDB = process.env.ORDERS_DDB!
