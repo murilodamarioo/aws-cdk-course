@@ -21,28 +21,6 @@ export class EventDdbStack extends cdk.Stack {
             },
             timeToLiveAttribute: 'ttl',
             billingMode: dynamodb.BillingMode.PROVISIONED,
-            readCapacity: 1,
-            writeCapacity: 1
-        })
-
-        const readScale = this.table.autoScaleReadCapacity({
-            maxCapacity: 2,
-            minCapacity: 1
-        })
-        readScale.scaleOnUtilization({
-            targetUtilizationPercent: 50,
-            scaleInCooldown: cdk.Duration.seconds(60),
-            scaleOutCooldown: cdk.Duration.seconds(60)
-        })
-
-        const writeScale = this.table.autoScaleWriteCapacity({
-            maxCapacity: 4,
-            minCapacity: 1
-        })
-        writeScale.scaleOnUtilization({
-            targetUtilizationPercent: 30,
-            scaleInCooldown: cdk.Duration.seconds(60),
-            scaleOutCooldown: cdk.Duration.seconds(60)
         })
     }
 

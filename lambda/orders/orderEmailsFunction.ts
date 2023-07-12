@@ -17,7 +17,7 @@ export async function handler(event: SQSEvent, context: Context): Promise<void> 
     })
 
     await Promise.all(promises)
-    
+
     return
 }
 
@@ -33,9 +33,7 @@ function sendOrderEmail(body: SNSMessage) {
             Body: {
                 Text: {
                     Charset: 'UTF-8',
-                    Data: 
-                    `Recebemos seu pedido de número ${event.orderId},
-                        no valor de R$ ${event.billing.totalPrice}`,
+                    Data: `Recebemos seu pedido de número ${event.orderId}, no valor de R$ ${event.billing.totalPrice}`,
                 }
             },
             Subject: {
