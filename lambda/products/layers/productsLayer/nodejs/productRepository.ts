@@ -51,7 +51,7 @@ export class ProductRepository {
 
         console.log(`TableName Post: ${this.productDynamoDb}`)
 
-        await  this.dynamoDbClient.put({
+        await this.dynamoDbClient.put({
             TableName: this.productDynamoDb,
             Item: product
         }).promise()
