@@ -122,7 +122,7 @@ export class InvoiceWSApiStack extends cdk.Stack {
                 }
             }
         })
-        //Create and give policy to getUrlHandler for acess bucket
+        // Create and give policy to getUrlHandler for acess bucket
         getUrlHandler.addToRolePolicy(invoicesDdbWriteTransactionPolicy)
         const invoicesBucketPutObjectpolicy = new iam.PolicyStatement({
             effect: iam.Effect.ALLOW,
@@ -130,8 +130,40 @@ export class InvoiceWSApiStack extends cdk.Stack {
             resources: [`${bucket.bucketArn}/*`]
         })
         getUrlHandler.addToRolePolicy(invoicesBucketPutObjectpolicy)
-        // Give the policy for 
+        // Give the policy to getUrlHandler for manage connections
         webSocketApi.grantManageConnections(getUrlHandler)
+
+        // Invoice import handler
+        const invoiceImportHandler = new lambdaNodeJS.NodejsFunction(this, 'InvoiceImportUrlFunction', {
+            functionName: 'InvoiceImportUrlFunction',
+            entry: 'lambda/invoices/invoiceImportUrlFunction.ts',
+            runtime: lambda.Runtime.NODEJS_16_X,
+            handler: 'handler',
+            memorySize: 128,
+            timeout: cdk.Duration.seconds(2),
+            bundling: {
+                minify: true,
+                sourceMap: false,
+            },
+            tracing: lambda.Tracing.ACTIVE,
+            environment: {
+                INVOICE_DDB: invoicesDdb.tableName,
+                INVOICE_WSAPI_ENDPOINT: wsApiEndPoint
+            }
+        })
+        invoicesDdb.grantReadWriteData(invoiceImportHandler)
+
+        bucket.addEventNotification(s3.EventType.OBJECT_CREATED_PUT, new s3n.LambdaDestination(invoiceImportHandler))
+
+        // Create and give policy to invoicesBucketGetDeleteObjectPolicy
+        const invoicesBucketGetDeleteObjectPolicy = new iam.PolicyStatement({
+            effect: iam.Effect.ALLOW,
+            actions: ['s3:DeleteObject', 's3:GetObject'],
+            resources: [`${bucket.bucketArn}/*`]
+        })
+        invoiceImportHandler.addToRolePolicy(invoicesBucketGetDeleteObjectPolicy)
+        // Give the policy to invoiceImportHandler for manage connections
+        webSocketApi.grantManageConnections(invoiceImportHandler)
 
         // Cancel import handler
 
