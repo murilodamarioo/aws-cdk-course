@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 import 'source-map-support/register'
 import * as cdk from 'aws-cdk-lib'
-
 import { 
   ProductsAppStack, 
   EcommerceApiStack, 
   ProductAppLayersStack, 
   EventDdbStack,
   OrdersAppLayersStack,
-  OrdersAppStack 
+  OrdersAppStack,
+  InvoiceWSApiStack 
 } from '../lib'
 
 const app = new cdk.App();
@@ -76,3 +76,11 @@ const ecommerceApiStack = new EcommerceApiStack(app, 'ECommerceApi', {
 // Add stack dependence to ecommerceApiStack
 ecommerceApiStack.addDependency(productsAppStack)
 ecommerceApiStack.addDependency(ordersAppStack)
+
+const invoiceWSApiStack = new InvoiceWSApiStack(app, 'InvoiceApi', {
+  tags: {
+    cost: 'InvoiceApp',
+    team: 'Murilo'
+  },
+  env: env
+})

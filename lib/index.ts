@@ -9,3 +9,5 @@ export * from './eventsDdb-stack'
 export * from './ordersApp-stack'
 
 export * from './ordersAppLayers-stack'
+
+export * from './invoiceWSApi-stack'
