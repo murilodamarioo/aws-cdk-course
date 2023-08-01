@@ -30,18 +30,34 @@ export class InvoiceWSApiStack extends cdk.Stack {
             timeToLiveAttribute:'ttl',
             removalPolicy: cdk.RemovalPolicy.DESTROY
         })
+
         // Invoice bucket
+        const bucket = new s3.Bucket(this, 'InvoicesBucket', {
+            removalPolicy: cdk.RemovalPolicy.DESTROY,
+            autoDeleteObjects: true,
+            lifecycleRules: [
+                {
+                    enabled: true,
+                    expiration: cdk.Duration.days(1)
+                }
+            ]
+        })
 
         // WebSocket connection handler
 
+
         // WebSocket disconnection handler
 
+
         // WebSocket API
+    
 
         // Invoice URL handler
 
+
         // Cancel import handler
 
+        
         // WebSocket API routes
     }
 }
