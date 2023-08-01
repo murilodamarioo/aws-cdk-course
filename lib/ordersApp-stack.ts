@@ -240,6 +240,6 @@ export class OrdersAppStack extends cdk.Stack {
             actions: ['dynamodb:Query'],
             resources: [`${props.eventsDdb.tableArn}/index/emailIndex`]
         })
-        this.orderEventsFetchHandler.addToRolePolicy(eventsDynamoDbPolicy)
+        this.orderEventsFetchHandler.addToRolePolicy(eventsFetchDdbPolicy)
     }
 }  

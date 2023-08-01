@@ -38,7 +38,7 @@ export class OrderEventRepository {
             KeyConditionExpression: 'email = :email AND begins_with(sk, :prefix)',
             ExpressionAttributeValues: {
                 ':email': email,
-                'prefix': 'ORDER_'
+                ':prefix': 'ORDER_'
             }
         }).promise()
         return data.Items as OrderEventDdb[]
@@ -51,7 +51,7 @@ export class OrderEventRepository {
             KeyConditionExpression: 'email = :email AND begins_with(sk, :prefix)',
             ExpressionAttributeValues: {
                 ':email': email,
-                'prefix': eventType
+                ':prefix': eventType
             }
         }).promise()
         return data.Items as OrderEventDdb[]
