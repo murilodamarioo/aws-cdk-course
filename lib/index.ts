@@ -11,3 +11,5 @@ export * from './ordersApp-stack'
 export * from './ordersAppLayers-stack'
 
 export * from './invoiceWSApi-stack'
+
+export * from './invoicesAppLayers-stack'
