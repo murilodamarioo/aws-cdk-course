@@ -38,4 +38,41 @@ export class InvoiceTransactionRepository {
 
         return invoiceTransaction
     }
+
+    async getInvoiceTransaction(key: string): Promise<InvoiceTransaction> {
+        const data = await this.dynamoDbClient.get({
+            TableName: this.InvoiceTransactionDdb,
+            Key: {
+                pk: '#transaction',
+                sk: key
+            }
+        }).promise()
+
+        if (data.Item) {
+            return data.Item as InvoiceTransaction
+        } else {
+            throw new Error('Invoice transaction not found')
+        }
+    }
+
+    async updateInvoiceTransaction(key: string, status: InvoiceTransactionStatus): Promise<boolean> {
+        try {
+            await this.dynamoDbClient.update({
+                TableName: this.InvoiceTransactionDdb,
+                Key: {
+                    pk: '#transaction',
+                    sk: key
+                },
+                ConditionExpression: 'attribute_exists(pk)',
+                UpdateExpression: 'set transactionStatus = :s',
+                ExpressionAttributeValues: {
+                    ':s': status
+                }
+            }).promise()
+            return true
+        } catch (ConditionalCheckFailedException) {
+            console.error('Invoice transaction not found')
+            return false
+        }
+    }
 }

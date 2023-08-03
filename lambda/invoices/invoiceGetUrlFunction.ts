@@ -31,7 +31,7 @@ export async function handler(event: APIGatewayProxyEvent, context: Context): Pr
     const key = uuid()
     const expires = 300
 
-    const signedUrlPut = s3Client.getSignedUrlPromise('putObject', {
+    const signedUrlPut = await s3Client.getSignedUrlPromise('putObject', {
         Bucket: bucketName,
         Key: key,
         Expires: expires
@@ -58,7 +58,7 @@ export async function handler(event: APIGatewayProxyEvent, context: Context): Pr
         transactionId: key
     })
     await invoiceWSService.sendData(connectionId, postData)
-    
+
     return {
         statusCode: 200,
         body: 'OK'
