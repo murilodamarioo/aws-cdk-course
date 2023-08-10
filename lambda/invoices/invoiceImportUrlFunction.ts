@@ -23,8 +23,6 @@ const invoiceRepository = new InvoiceRepository(dynamoDbClient, invoicesDdb)
 export async function handler(event: S3Event, context: Context): Promise<void> {
     const promises: Promise<void>[] = []
 
-    console.log('event')
-
     event.Records.forEach((record) => {
         promises.push(processRecord(record))
     })
