@@ -87,6 +87,8 @@ async function processRecord(record: S3EventRecord): Promise<void> {
             const updateInvoicePromise = invoiceTransactionRepository.updateInvoiceTransaction(key, InvoiceTransactionStatus.NON_VALID_INVOICE_NUMBER)
 
             await Promise.all([sendStatusPromise, updateInvoicePromise])
+
+            await invoiceWSService.disconnectClient(invoiceTransaction.connectionId)
         }
 
     } catch (error) {
