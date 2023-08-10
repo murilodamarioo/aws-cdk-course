@@ -18,7 +18,7 @@ const invoiceTransactionRepository = new InvoiceTransactionRepository(dynamoDbCl
 const invoiceWSService = new InvoiceWSService(apigwManagementApi)
 
 export async function handler(event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> {
-    const transactionId = JSON.parse(event.body!).transactioId as string
+    const transactionId = JSON.parse(event.body!).transactionId as string
     const lambdaRequestId = context.awsRequestId
     const connectionId = event.requestContext.connectionId!
 
