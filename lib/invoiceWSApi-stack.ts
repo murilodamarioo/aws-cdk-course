@@ -10,9 +10,12 @@ import * as  s3n from 'aws-cdk-lib/aws-s3-notifications'
 import * as ssm from 'aws-cdk-lib/aws-ssm'
 import { Construct } from 'constructs'
 
+interface InvoiceWSApiStackProps extends cdk.StackProps {
+    eventsDdb: dynamodb.Table
+}
 
 export class InvoiceWSApiStack extends cdk.Stack {
-    constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    constructor(scope: Construct, id: string, props: InvoiceWSApiStackProps) {
         super(scope, id, props)
 
         // Invoice Transaction Layer
@@ -222,6 +225,25 @@ export class InvoiceWSApiStack extends cdk.Stack {
         })
         webSocketApi.addRoute('cancelImport', {
             integration: new apigatewayv2_integrations.WebSocketLambdaIntegration('CancelImportHandler', cancelImportHandler)
+        })
+
+        const invoiceEventsHandler = new lambdaNodeJS.NodejsFunction(this, 'InvoiceEventsFunction', {
+            functionName: 'InvoiceEventsFunction',
+            entry: 'lambda/invoices/invoiceEventsFunction.ts',
+            runtime: lambda.Runtime.NODEJS_16_X,
+            handler: 'handler',
+            memorySize: 128,
+            timeout: cdk.Duration.seconds(2),
+            bundling: {
+                minify: true,
+                sourceMap: false,
+            },
+            tracing: lambda.Tracing.ACTIVE,
+            environment: {
+                EVENTS_DDB: props.eventsDdb.tableName,
+                INVOICE_WSAPI_END_POINT: wsApiEndPoint
+            },
+            layers: [invoiceWSConnectionLayer]
         })
     }
 }
