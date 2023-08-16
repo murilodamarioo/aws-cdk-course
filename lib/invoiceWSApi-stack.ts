@@ -245,5 +245,20 @@ export class InvoiceWSApiStack extends cdk.Stack {
             },
             layers: [invoiceWSConnectionLayer]
         })
+
+        // Giving policy to InvoiceEventsFunction
+        const eventsDynamoDbPolicy = new iam.PolicyStatement({
+            effect: iam.Effect.ALLOW,
+            actions: ['dynamodb:PutItem'],
+            resources: [props.eventsDdb.tableArn],
+            conditions: {
+                ['ForAllValues:StringLike']: {
+                    'dynamodb:LeadingKeys': ['#invoice_*']
+                }
+            }
+        })
+        invoiceEventsHandler.addToRolePolicy(eventsDynamoDbPolicy)
+        webSocketApi.grantManageConnections(invoiceEventsHandler)
+        
     }
 }
