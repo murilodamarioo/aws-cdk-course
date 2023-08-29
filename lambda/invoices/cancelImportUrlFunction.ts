@@ -27,11 +27,11 @@ export async function handler(event: APIGatewayProxyEvent, context: Context): Pr
     try {
         const invoiceTransaction = await invoiceTransactionRepository.getInvoiceTransaction(transactionId)
 
-        if (invoiceTransaction.transactionsStatus === InvoiceTransactionStatus.GENERATED) {
+        if (invoiceTransaction.transactionStatus === InvoiceTransactionStatus.GENERATED) {
             await Promise.all([invoiceWSService.sendInvoiceStatus(transactionId, connectionId, InvoiceTransactionStatus.CANCELLED),
             invoiceTransactionRepository.updateInvoiceTransaction(transactionId, InvoiceTransactionStatus.CANCELLED)])
         } else {
-            await invoiceWSService.sendInvoiceStatus(transactionId, connectionId, invoiceTransaction.transactionsStatus)
+            await invoiceWSService.sendInvoiceStatus(transactionId, connectionId, invoiceTransaction.transactionStatus)
             console.log(`Can't cancel an ongoing process`)
         }
     } catch (error) {

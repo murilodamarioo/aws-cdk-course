@@ -45,7 +45,7 @@ export async function handler(event: APIGatewayProxyEvent, context: Context): Pr
         sk: key,
         ttl: ttl,
         requestId: lambdaRequestId,
-        transactionsStatus: InvoiceTransactionStatus.GENERATED,
+        transactionStatus: InvoiceTransactionStatus.GENERATED,
         timestamp: timestamp,
         expiresIn: expires,
         connectionId: connectionId,

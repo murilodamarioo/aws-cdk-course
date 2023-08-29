@@ -38,11 +38,11 @@ async function processRecord(record: S3EventRecord): Promise<void> {
     try {
         const invoiceTransaction = await invoiceTransactionRepository.getInvoiceTransaction(key)
         
-        if (invoiceTransaction.transactionsStatus === InvoiceTransactionStatus.GENERATED) {
+        if (invoiceTransaction.transactionStatus === InvoiceTransactionStatus.GENERATED) {
             await Promise.all([invoiceWSService.sendInvoiceStatus(key, invoiceTransaction.connectionId, InvoiceTransactionStatus.RECEIVED),
             invoiceTransactionRepository.updateInvoiceTransaction(key, InvoiceTransactionStatus.RECEIVED)])
         } else {
-            await invoiceWSService.sendInvoiceStatus(key, invoiceTransaction.connectionId, invoiceTransaction.transactionsStatus)
+            await invoiceWSService.sendInvoiceStatus(key, invoiceTransaction.connectionId, invoiceTransaction.transactionStatus)
             console.error('Non valid transaction status')
             return
         }
@@ -79,6 +79,8 @@ async function processRecord(record: S3EventRecord): Promise<void> {
             const sendStatusPromise = invoiceWSService.sendInvoiceStatus(key, invoiceTransaction.connectionId, InvoiceTransactionStatus.PROCESSED)
 
             await Promise.all([createInvoicePromise, deleteObjectPromise, updateInvoicePromise, sendStatusPromise])
+
+            //await invoiceWSService.disconnectClient(invoiceTransaction.connectionId)
         } else {
             console.error(`Invoice import failed - non valid invoice number - TransactionId: ${key}`)
 
