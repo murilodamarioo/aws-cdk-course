@@ -31,6 +31,7 @@ export class AuditEventsBus extends cdk.Stack {
         // Reason: PRODUCT_NOT_FOUND
         const nonValidOrderRule = new events.Rule(this, 'NonValidOrderRule', {
             ruleName: 'NonValidOrderRule',
+            description: 'Rule matching non valid order',
             eventBus: this.bus,
             eventPattern: {
                 source: ['app.order'],
@@ -57,5 +58,41 @@ export class AuditEventsBus extends cdk.Stack {
             insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_98_0
         })
         nonValidOrderRule.addTarget(new targets.LambdaFunction(ordersErrorsFunction))
+
+
+        // source: app.invoice
+    
+        // detailType: invoice
+
+        // ErrorDetail: FAIL_NO_INVOICE_NUMBER
+        const nonValidInvoiceRule = new events.Rule(this, 'NonValidInvoiceRule', {
+            ruleName: 'NonValidInvoiceRule',
+            description: 'Rule matching non valid invoice',
+            eventBus: this.bus,
+            eventPattern: {
+                source: ['app.invoice'],
+                detailType: ['invoice'],
+                detail: {
+                    errorDetail: ['FAIL_NO_INVOICE_NUMBER']
+                }
+            }
+        })
+
+        // Target
+        const invoicesErrorsFunction = new lambdaNodeJS.NodejsFunction(this, 'InvoicesErrosFunction', {
+            functionName: 'InvoicesErrosFunction',
+            entry: 'lambda/audit/invoicesErrosFunction.ts',
+            runtime: lambda.Runtime.NODEJS_16_X,
+            handler: 'handler',
+            memorySize: 128,
+            timeout: cdk.Duration.seconds(2),
+            bundling: {
+                minify: true,
+                sourceMap: false,
+            },
+            tracing: lambda.Tracing.ACTIVE,
+            insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_98_0
+        })
+        nonValidInvoiceRule.addTarget(new targets.LambdaFunction(invoicesErrorsFunction))
     }
 }
