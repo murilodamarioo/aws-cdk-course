@@ -23,5 +23,39 @@ export class AuditEventsBus extends cdk.Stack {
             archiveName: 'auditeEvents',
             retention: cdk.Duration.days(10)
         })
+
+        // source: app.order
+    
+        // detailType: order
+
+        // Reason: PRODUCT_NOT_FOUND
+        const nonValidOrderRule = new events.Rule(this, 'NonValidOrderRule', {
+            ruleName: 'NonValidOrderRule',
+            eventBus: this.bus,
+            eventPattern: {
+                source: ['app.order'],
+                detailType: ['order'],
+                detail: {
+                    reason: ['PRODUCT_NOT_FOUND']
+                }
+            }
+        })
+
+        // Target
+        const ordersErrorsFunction = new lambdaNodeJS.NodejsFunction(this, 'OrdersErrosFunction', {
+            functionName: 'OrdersErrosFunction',
+            entry: 'lambda/audit/ordersErrosFunction.ts',
+            runtime: lambda.Runtime.NODEJS_16_X,
+            handler: 'handler',
+            memorySize: 128,
+            timeout: cdk.Duration.seconds(2),
+            bundling: {
+                minify: true,
+                sourceMap: false,
+            },
+            tracing: lambda.Tracing.ACTIVE,
+            insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_98_0
+        })
+        nonValidOrderRule.addTarget(new targets.LambdaFunction(ordersErrorsFunction))
     }
 }
