@@ -94,5 +94,30 @@ export class AuditEventsBus extends cdk.Stack {
             insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_98_0
         })
         nonValidInvoiceRule.addTarget(new targets.LambdaFunction(invoicesErrorsFunction))
+
+
+        // source: app.invoice
+    
+        // detailType: invoice
+
+        // ErrorDetail: TIMOUT
+        const timeoutImportInvoiceRule = new events.Rule(this, 'TimeoutImportInvoiceRule', {
+            ruleName: 'TimeoutImportInvoiceRule',
+            description: 'Rule matching timout import invoice',
+            eventBus: this.bus,
+            eventPattern: {
+                source: ['app.order'],
+                detailType: ['order'],
+                detail: {
+                    reason: ['TIMEOUT']
+                }
+            }
+        })
+
+        // Target
+        const invoiceImportTimoutQueue = new sqs.Queue(this, 'InvoiceImportTimout', {
+            queueName: 'invoice-import-timout',
+        })
+        timeoutImportInvoiceRule.addTarget(new targets.SqsQueue(invoiceImportTimoutQueue))
     }
 }
