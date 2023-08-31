@@ -43,9 +43,9 @@ export class AuditEventsBus extends cdk.Stack {
         })
 
         // Target
-        const ordersErrorsFunction = new lambdaNodeJS.NodejsFunction(this, 'OrdersErrosFunction', {
-            functionName: 'OrdersErrosFunction',
-            entry: 'lambda/audit/ordersErrosFunction.ts',
+        const ordersErrorsFunction = new lambdaNodeJS.NodejsFunction(this, 'OrdersErrorsFunction', {
+            functionName: 'OrdersErrorsFunction',
+            entry: 'lambda/audit/ordersErrorsFunction.ts',
             runtime: lambda.Runtime.NODEJS_16_X,
             handler: 'handler',
             memorySize: 128,
@@ -79,9 +79,9 @@ export class AuditEventsBus extends cdk.Stack {
         })
 
         // Target
-        const invoicesErrorsFunction = new lambdaNodeJS.NodejsFunction(this, 'InvoicesErrosFunction', {
-            functionName: 'InvoicesErrosFunction',
-            entry: 'lambda/audit/invoicesErrosFunction.ts',
+        const invoicesErrorsFunction = new lambdaNodeJS.NodejsFunction(this, 'InvoicesErrorsFunction', {
+            functionName: 'InvoicesErrorsFunction',
+            entry: 'lambda/audit/invoicesErrorsFunction.ts',
             runtime: lambda.Runtime.NODEJS_16_X,
             handler: 'handler',
             memorySize: 128,
