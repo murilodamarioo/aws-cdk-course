@@ -1,14 +1,16 @@
 import { AttributeValue, Context, DynamoDBStreamEvent } from 'aws-lambda'
-import { ApiGatewayManagementApi, DynamoDB } from 'aws-sdk'
+import { ApiGatewayManagementApi, DynamoDB, EventBridge } from 'aws-sdk'
 import { InvoiceWSService } from '/opt/nodejs/invoiceWSConnection'
 import * as AWSXRay from 'aws-xray-sdk'
 
 AWSXRay.captureAWS(require('aws-sdk'))
 
 const eventsDdb = process.env.EVENTS_DDB!
+const auditBusName = process.env.AUDIT_BUS_NAME!
 const invoiceWSApiEndPoint = process.env.INVOICE_WSAPI_END_POINT!.substring(6)
 
 const dynamoDbClient = new DynamoDB.DocumentClient()
+const eventBrigdeClient = new EventBridge()
 const apigwManagementApi = new ApiGatewayManagementApi({
     endpoint: invoiceWSApiEndPoint
 })
@@ -51,7 +53,26 @@ async function processExpiredTransaction(invoiceTransactionImage: {[key: string]
         console.log('Invoice processed')
     } else {
         console.log(`Invoice import failed - Status: ${invoiceTransactionImage.transactionStatus.S}`)
-        await invoiceWSService.sendInvoiceStatus(transactionId, connectionId, 'TIMOUT')
+
+        const putEventPromise = eventBrigdeClient.putEvents({
+            Entries: [
+                {
+                    Source: 'app.invoice',
+                    EventBusName: auditBusName,
+                    DetailType: 'invoice',
+                    Time: new Date(),
+                    Detail: JSON.stringify({
+                        errorDetail: 'TIMOUT',
+                        transactionId: transactionId
+                    })
+                }
+            ]
+        }).promise()
+
+        const sendStatusPromise =  invoiceWSService.sendInvoiceStatus(transactionId, connectionId, 'TIMOUT')
+
+        await Promise.all([putEventPromise, sendStatusPromise])
+        
         await invoiceWSService.disconnectClient(connectionId)
     }
 }
