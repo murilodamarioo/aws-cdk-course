@@ -1,5 +1,5 @@
 import { Context, S3Event, S3EventRecord } from 'aws-lambda'
-import { ApiGatewayManagementApi, DynamoDB, S3 } from 'aws-sdk'
+import { ApiGatewayManagementApi, DynamoDB, EventBridge, S3 } from 'aws-sdk'
 import * as AWSXRay from 'aws-xray-sdk'
 import { InvoiceTransaction, InvoiceTransactionRepository, InvoiceTransactionStatus } from '/opt/nodejs/invoiceTransaction'
 import { InvoiceWSService } from '/opt/nodejs/invoiceWSConnection'
@@ -8,10 +8,12 @@ import { InvoiceFile, InvoiceRepository } from '/opt/nodejs/invoiceRepository'
 AWSXRay.captureAWS(require('aws-sdk'))
 
 const invoicesDdb = process.env.INVOICE_DDB!
+const auditBusName = process.env.AUDIT_BUS_NAME!
 const invoicesWSApiEndPoint = process.env.INVOICE_WSAPI_ENDPOINT!.substring(6)
 
 const s3Client = new S3()
 const dynamoDbClient = new DynamoDB.DocumentClient()
+const eventBrigdeClient = new EventBridge()
 const  apigwManagementApi = new ApiGatewayManagementApi({
     endpoint: invoicesWSApiEndPoint
 })
@@ -84,11 +86,29 @@ async function processRecord(record: S3EventRecord): Promise<void> {
         } else {
             console.error(`Invoice import failed - non valid invoice number - TransactionId: ${key}`)
 
+            const putEventPromise = eventBrigdeClient.putEvents({
+                Entries: [
+                    {
+                        Source: 'app.invoice',
+                        EventBusName: auditBusName,
+                        DetailType: 'invoice',
+                        Time: new Date(),
+                        Detail: JSON.stringify({
+                            errorDetail: 'NON_VALID_INVOICE_NUMBER',
+                            info: {
+                                invoiceKey: key,
+                                customerName: invoice.customerName
+                            }
+                        })
+                    }
+                ]
+            }).promise()
+
             const sendStatusPromise = invoiceWSService.sendInvoiceStatus(key, invoiceTransaction.connectionId, InvoiceTransactionStatus.NON_VALID_INVOICE_NUMBER)
 
             const updateInvoicePromise = invoiceTransactionRepository.updateInvoiceTransaction(key, InvoiceTransactionStatus.NON_VALID_INVOICE_NUMBER)
 
-            await Promise.all([sendStatusPromise, updateInvoicePromise])
+            await Promise.all([sendStatusPromise, updateInvoicePromise, putEventPromise])
 
             await invoiceWSService.disconnectClient(invoiceTransaction.connectionId)
         }
