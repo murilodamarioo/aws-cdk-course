@@ -10,6 +10,9 @@ import * as iam from 'aws-cdk-lib/aws-iam'
 import * as sqs from 'aws-cdk-lib/aws-sqs'
 import * as lambdaEventSource from 'aws-cdk-lib/aws-lambda-event-sources'
 import * as events from 'aws-cdk-lib/aws-events'
+import * as logs from 'aws-cdk-lib/aws-logs'
+import * as cw from 'aws-cdk-lib/aws-cloudwatch'
+import * as cw_actions from 'aws-cdk-lib/aws-cloudwatch-actions'
 
 interface OrdersAppStackProps extends cdk.StackProps {
     productDdb: dynamodb.Table,
@@ -102,6 +105,33 @@ export class OrdersAppStack extends cdk.Stack {
 
         // Giving permission to post on EventBrigde
         props.auditBus.grantPutEventsTo(this.ordersHandler)
+
+
+        // Metric
+        const productNotFoundMetricFilter = this.ordersHandler.logGroup.addMetricFilter('ProductNotFoundMetric', {
+            metricName: 'OrderWithNonValidProduc',
+            metricNamespace: 'ProductNotFound',
+            filterPattern: logs.FilterPattern.literal('Some product was not found')
+        })
+        // Alarm
+        const productNotFoundAlarm = productNotFoundMetricFilter.metric().with({
+            statistic: 'Sum',
+            period: cdk.Duration.minutes(2)
+        }).createAlarm(this, 'ProductNotFoundAlarm', {
+            alarmName: 'OrderWithNonValidProduct',
+            alarmDescription: 'Some product was not found while creating a new order',
+            evaluationPeriods: 1,
+            threshold: 2,
+            actionsEnabled: true,
+            comparisonOperator: cw.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD
+        })
+        // Action
+        const orderAlarmsTopic = new sns.Topic(this, 'OrderAlarmTopic', {
+            displayName: 'Order alarms topic',
+            topicName: 'order-alarms'
+        })
+        orderAlarmsTopic.addSubscription(new subs.EmailSubscription('murilo.gcdamario@gmail.com'))
+        productNotFoundAlarm.addAlarmAction(new cw_actions.SnsAction(orderAlarmsTopic))
 
         // Creating EventsHandler function     
         const orderEventsHandler = new lambdaNodeJS.NodejsFunction(this, 'OrderEventsFunction', {

@@ -25,9 +25,7 @@ export class AuditEventsBusStack extends cdk.Stack {
         })
 
         // source: app.order
-    
         // detailType: order
-
         // Reason: PRODUCT_NOT_FOUND
         const nonValidOrderRule = new events.Rule(this, 'NonValidOrderRule', {
             ruleName: 'NonValidOrderRule',
@@ -61,9 +59,7 @@ export class AuditEventsBusStack extends cdk.Stack {
 
 
         // source: app.invoice
-    
         // detailType: invoice
-
         // ErrorDetail: FAIL_NO_INVOICE_NUMBER
         const nonValidInvoiceRule = new events.Rule(this, 'NonValidInvoiceRule', {
             ruleName: 'NonValidInvoiceRule',
@@ -97,9 +93,7 @@ export class AuditEventsBusStack extends cdk.Stack {
 
 
         // source: app.invoice
-    
         // detailType: invoice
-
         // ErrorDetail: TIMOUT
         const timeoutImportInvoiceRule = new events.Rule(this, 'TimeoutImportInvoiceRule', {
             ruleName: 'TimeoutImportInvoiceRule',

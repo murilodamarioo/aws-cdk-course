@@ -94,6 +94,8 @@ export async function handler(event: APIGatewayProxyEvent, context: Context): Pr
                 body: JSON.stringify(convertToOrderResponse(order))
             }
         } else {
+            console.error('Some product was not found')
+            
             const result = await eventBrigdeClient.putEvents({
                 Entries: [
                     {
@@ -102,7 +104,7 @@ export async function handler(event: APIGatewayProxyEvent, context: Context): Pr
                         DetailType: 'order',
                         Time: new Date(),
                         Detail: JSON.stringify({
-                            resason: 'PRODUCT_NOT_FOUND',
+                            reason: 'PRODUCT_NOT_FOUND',
                             orderRequest: orderRequest
                         })
                     }
