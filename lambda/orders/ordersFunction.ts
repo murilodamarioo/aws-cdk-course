@@ -1,6 +1,6 @@
 import { Order, OrderRepository } from '/opt/nodejs/ordersLayer'
 import { Product, ProductRepository } from '/opt/nodejs/productsLayer'
-import { DynamoDB, SNS } from 'aws-sdk'
+import { DynamoDB, EventBridge, SNS } from 'aws-sdk'
 import { APIGatewayProxyEvent, APIGatewayProxyResultV2, Context } from 'aws-lambda'
 import { CarrierType, OrderProductResponse, OrderRequest, OrderResponse, PaymentType, ShippingType } from './layers/ordersApiLayer/nodejs/orderApi'
 import * as AWSXRay from 'aws-xray-sdk'
@@ -11,11 +11,13 @@ AWSXRay.captureAWS(require('aws-sdk'))
 
 const ordersDynamoDB = process.env.ORDERS_DDB!
 const productsDynamoDb = process.env.PRODUCTS_DDB!
-const orderEventsTopicArn = process.env.ORDER_EVENTS_TOPIC_ARN!    
+const orderEventsTopicArn = process.env.ORDER_EVENTS_TOPIC_ARN!
+const auditBusName = process.env.AUDIT_BUS_NAME!
 
 
 const dynamoDbClient = new DynamoDB.DocumentClient()
 const snsClient = new SNS()
+const eventBrigdeClient = new EventBridge()
 
 const orderRepository = new OrderRepository(dynamoDbClient, ordersDynamoDB)
 const productRepository = new ProductRepository(dynamoDbClient, productsDynamoDb)
@@ -92,6 +94,22 @@ export async function handler(event: APIGatewayProxyEvent, context: Context): Pr
                 body: JSON.stringify(convertToOrderResponse(order))
             }
         } else {
+            const result = await eventBrigdeClient.putEvents({
+                Entries: [
+                    {
+                        Source: 'app.order',
+                        EventBusName: auditBusName,
+                        DetailType: 'order',
+                        Time: new Date(),
+                        Detail: JSON.stringify({
+                            resason: 'PRODUCT_NOT_FOUND',
+                            orderRequest: orderRequest
+                        })
+                    }
+                ]
+            }).promise()
+
+            console.log(result)
             return {
                 statusCode: 404,
                 body: 'Some product was not found'
