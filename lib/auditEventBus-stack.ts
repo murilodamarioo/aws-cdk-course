@@ -7,7 +7,7 @@ import * as targets from 'aws-cdk-lib/aws-events-targets'
 import { Construct } from 'constructs'
 
 export class AuditEventsBusStack extends cdk.Stack {
-    private readonly bus: events.EventBus
+    readonly bus: events.EventBus
 
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props)

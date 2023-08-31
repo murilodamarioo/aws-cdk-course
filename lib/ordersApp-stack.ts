@@ -9,10 +9,12 @@ import * as subs from 'aws-cdk-lib/aws-sns-subscriptions'
 import * as iam from 'aws-cdk-lib/aws-iam'
 import * as sqs from 'aws-cdk-lib/aws-sqs'
 import * as lambdaEventSource from 'aws-cdk-lib/aws-lambda-event-sources'
+import * as events from 'aws-cdk-lib/aws-events'
 
 interface OrdersAppStackProps extends cdk.StackProps {
     productDdb: dynamodb.Table,
-    eventsDdb: dynamodb.Table
+    eventsDdb: dynamodb.Table,
+    auditBus: events.EventBus
 }
 
 export class OrdersAppStack extends cdk.Stack {
@@ -81,7 +83,8 @@ export class OrdersAppStack extends cdk.Stack {
             environment: {
                 PRODUCTS_DDB: props.productDdb.tableName,
                 ORDERS_DDB: ordersDynamodb.tableName,
-                ORDER_EVENTS_TOPIC_ARN: ordersTopic.topicArn
+                ORDER_EVENTS_TOPIC_ARN: ordersTopic.topicArn,
+                AUDIT_BUS_NAME: props.auditBus.eventBusName
             },
             layers: [ordersLayer, productsLayer, ordersApiLayer, orderEventsLayer],
             tracing: lambda.Tracing.ACTIVE,
@@ -96,6 +99,9 @@ export class OrdersAppStack extends cdk.Stack {
         
         // Giving publish permission to ordersHandler funtion
         ordersTopic.grantPublish(this.ordersHandler)
+
+        // Giving permission to post on EventBrigde
+        props.auditBus.grantPutEventsTo(this.ordersHandler)
 
         // Creating EventsHandler function     
         const orderEventsHandler = new lambdaNodeJS.NodejsFunction(this, 'OrderEventsFunction', {
