@@ -4,6 +4,7 @@ import * as cdk from 'aws-cdk-lib'
 import * as sqs from 'aws-cdk-lib/aws-sqs'
 import * as events from 'aws-cdk-lib/aws-events'
 import * as targets from 'aws-cdk-lib/aws-events-targets'
+import * as cw from 'aws-cdk-lib/aws-cloudwatch'
 import { Construct } from 'constructs'
 
 export class AuditEventsBusStack extends cdk.Stack {
@@ -113,5 +114,19 @@ export class AuditEventsBusStack extends cdk.Stack {
             queueName: 'invoice-import-timout',
         })
         timeoutImportInvoiceRule.addTarget(new targets.SqsQueue(invoiceImportTimoutQueue))
+
+        // Metric
+        const numberOfMessagesMetric = invoiceImportTimoutQueue.metricApproximateNumberOfMessagesVisible({
+            period: cdk.Duration.minutes(2),
+            statistic: 'Sum'
+        })
+        // Alarm
+        numberOfMessagesMetric.createAlarm(this, 'InvoiceImportTimeoutAlarm', {
+            alarmName: 'InvoiceImportTimout',
+            actionsEnabled: false,
+            evaluationPeriods: 1,
+            threshold: 5,
+            comparisonOperator: cw.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD
+        })
     }
 }
